@@ -58,6 +58,36 @@ Create it with the working directory's file tools or `mkdir -p`. Never nest it i
 - Forward planning changes to the `planner` subagent's `tasks.md`/`attack-chains.md` rather than duplicating plans in `notes/`.
 - Never mark a finding Confirmed yourself: the `critic` subagent rules. You store findings and attach the critic's verdict when available.
 
+## Operational testing playbook (lessons from live engagements)
+
+Hard rules refined from real runs. Apply in every engagement.
+
+- **Authenticated workflows.** Use one persistent cookie jar (`curl -c jar -b jar`)
+  for the whole session. If the app issues a CSRF token, extract it from the form
+  and replay it in the same request; tokens are often single-use, so re-fetch the
+  page between actions (DVWA login/setup embed a `user_token` hidden field).
+- **Inspect the form before injecting.** Fetch the page, list the `<input name=...>`
+  values, then target the real fields. Never guess parameter names (`ip` not `cmd`,
+  `mtxMessage` not `mtxtMessage`). This is the most common wasted attempt.
+- **Respect client-controlled security state.** Apps like DVWA gate behavior on a
+  `security=low` cookie the client sets. Confirm that state is active before
+  judging a finding; a missing cookie can silently raise the level and
+  invalidate the test.
+- **Match the query shape.** For union SQLi, first find the correct column count
+  for the target SELECT (try 2..N) before requesting `user()`/`database()`.
+- **Assert minimal evidence.** Verify with HTTP status plus a narrow grep over
+  response bytes (`grep -oP 'uid=[0-9]+'`, `First name.*`) — do not rely on
+  whole-page diffs. Store the raw response to `evidence/`.
+- **Record negative results.** A verified-secure endpoint (e.g. 401/403) is a
+  useful finding of absence. Log it so the team does not retest and does not
+  misreport it as a hole.
+- **Do not fake client-side evidence.** If a vulnerability only manifests in a
+  DOM/browser context (SPA sinks), `curl` cannot prove it mark the item
+  DEFERRED with the tool needed (browser automation) rather than claiming it.
+- **On web apps, verify reachability first** (status 200/302) before running any
+  tool; a 302-to-login or setup redirect means the app is not in a testable
+  state.
+
 ## Engagement close
 
 On request, add a `status.md` summarizing what was tested, what is outstanding, and produce the folder inventory suitable for report handoff.

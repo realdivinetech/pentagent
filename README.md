@@ -77,6 +77,14 @@ Then use the built-in commands inside the agent:
 | `/report` | Generate the professional report |
 | `/research` | Live threat/vulnerability research |
 
+## Operational scripts & templates
+
+| Item | Purpose |
+|------|---------|
+| `scripts/validate.sh` | Repo consistency check (CI runs it on every push/PR) |
+| `scripts/audit.sh [profile]` | Host tool audit vs. the setup manifest (`standard` default; profiles: `webapp`, `netad`, `minimal`) |
+| `templates/engagement/` | Blank, copy-able engagement workspace (scope, tasks, attack-chains, findings, critique, report skeleton) |
+
 ## Installation policy
 
 Pentagent **never installs software without explicit user approval** — enforced both by prompt rule and by the OpenCode adapter's command-level permissions.

@@ -82,7 +82,7 @@ tools:
   # ---- web ----
   - { name: ffuf,              category: web,       pm: apt, package: ffuf,                    size_mb: 15,  verify: "ffuf -V",                          required: true,
       sources: [{pm: apt, package: ffuf}, {pm: go, cmd: "go install -v github.com/ffuf/ffuf/v2@latest"}] }
-  - { name: gobuster,          category: web,       pm: apt, package: gobuster,                size_mb: 10,  verify: "gobuster version",                 required: false }
+  - { name: gobuster,          category: web,       pm: apt, package: gobuster,                size_mb: 10,  verify: "gobuster --version",               required: false }
   - { name: feroxbuster,       category: web,       pm: apt, package: feroxbuster,             size_mb: 50,  verify: "feroxbuster --version",            required: false,
       sources: [{pm: apt, package: feroxbuster}, {pm: cargo, cmd: "cargo install feroxbuster"}] }
   - { name: nikto,             category: web,       pm: apt, package: nikto,                   size_mb: 10,  verify: "nikto -Version",                    required: false }
