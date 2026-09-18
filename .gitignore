@@ -1,0 +1,33 @@
+# Secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+id_rsa
+id_ed25519
+
+# Local engagement data / evidence
+engagements/*
+!engagements/README.md
+!engagements/.gitkeep
+
+# Local reports that may contain client data
+reports/*.pdf
+reports/*.docx
+reports/private/
+
+# Tool caches / OS files
+.cache/
+__pycache__/
+*.log
+.DS_Store
+Thumbs.db
+
+# Local runtime files
+.opencode/tmp/
+
+# Host provisioning logs (setup agent)
+setup/

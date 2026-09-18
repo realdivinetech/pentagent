@@ -1,0 +1,129 @@
+# Pentagent setup manifest — tool inventory (single source of truth for provisioning + audit)
+# The `setup` agent reads this file. The `kali-tool-audit` skill reports against it.
+# Each tool lists ordered install sources; try them in order until one succeeds.
+# `host_req` entries are non-tool requirements the setup must validate first.
+
+host_req:
+  - name: passwordless sudo
+    check: "sudo -n true"
+    why: setup runs unattended; must not wait on interactive sudo password
+    un_solvable: "Run once manually: `sudo usermod -aG sudo $USER` then `sudo visudo` to add: `$USER ALL=(ALL) NOPASSWD:ALL` (or run the provisioning from a privileged session)."
+  - name: network to package mirrors
+    check: "curl -m 8 -fsS https://pypi.org/ -o /dev/null"
+    why: installs require reachable apt/pip/go mirrors
+    un_solvable: "No outbound connectivity. Provide a proxy/mirror, or run the same steps on a connected host."
+  - name: disk headroom
+    check: "df -B1M --output=avail /"
+    why: needs free space >= estimated install size + 30% headroom
+    un_solvable: "Insufficient disk for the selected profile (needed X MB, free Y MB). Free space with: `sudo apt-get clean`, `sudo apt autoremove -y`, prune snap/caches, or add storage."
+  - name: archive-free /usr writable for symlinks
+    check: "test -w /usr/local/bin"
+    why: pipx/go installs drop binaries into /usr/local/bin
+    un_solvable: "Create it first: `sudo mkdir -p /usr/local/bin`."
+
+categories:
+  foundation: "Core runtimes and system utilities every profile needs"
+  recon: "Reconnaissance and attack-surface discovery"
+  web: "Web and API application testing"
+  exploit: "Exploitation, credential, and wireless tooling"
+  mobile: "Android / mobile reverse engineering"
+  cloud: "Cloud, container, and Kubernetes assessment"
+  ad: "Active Directory and Windows internals"
+  utility: "Reporting and analysis support"
+
+profiles:
+  minimal: { stages: [foundation], desc: "Core runtimes + networking basics" }
+  standard: { stages: [foundation, recon, web, exploit, mobile, cloud, ad, utility], desc: "Full lab workstation (default)" }
+  webapp: { stages: [foundation, recon, web, utility], desc: "Web/API assessment only" }
+  netad: { stages: [foundation, recon, exploit, ad, utility], desc: "Infrastructure / Active Directory" }
+
+tools:
+  # ---- foundation ----
+  - { name: build-essential,   category: foundation, pm: apt, package: build-essential,       size_mb: 220, verify: "make --version",                required: true }
+  - { name: curl,              category: foundation, pm: apt, package: curl,                  size_mb: 8,   verify: "curl --version",                  required: true }
+  - { name: wget,              category: foundation, pm: apt, package: wget,                  size_mb: 5,   verify: "wget --version",                  required: true }
+  - { name: git,               category: foundation, pm: apt, package: git,                   size_mb: 60,  verify: "git --version",                    required: true }
+  - { name: unzip,             category: foundation, pm: apt, package: unzip,                 size_mb: 5,   verify: "unzip -v",                        required: true }
+  - { name: xz-utils,          category: foundation, pm: apt, package: xz-utils,              size_mb: 4,   verify: "xz --version",                     required: true }
+  - { name: jq,                category: foundation, pm: apt, package: jq,                    size_mb: 5,   verify: "jq --version",                     required: true }
+  - { name: tmux,              category: foundation, pm: apt, package: tmux,                  size_mb: 10,  verify: "tmux -V",                         required: true }
+  - { name: ripgrep,           category: foundation, pm: apt, package: ripgrep,               size_mb: 15,  verify: "rg --version",                     required: true }
+  - { name: netcat,            category: foundation, pm: apt, package: netcat-openbsd,        size_mb: 5,   verify: "nc -h",                           required: false }
+  - { name: socat,             category: foundation, pm: apt, package: socat,                 size_mb: 10,  verify: "socat -V",                        required: false }
+  - { name: python3-pip,       category: foundation, pm: apt, package: python3-pip,           size_mb: 25,  verify: "pip3 --version",                   required: true }
+  - { name: pipx,              category: foundation, pm: apt, package: pipx,                  size_mb: 10,  verify: "pipx --version",                   required: true,
+      sources: [{pm: apt, package: pipx}] }
+  - { name: golang,            category: foundation, pm: apt, package: golang-go,             size_mb: 280, verify: "go version",                      required: true }
+  - { name: nodejs,            category: foundation, pm: apt, package: nodejs,                size_mb: 80,  verify: "node --version",                   required: false }
+  - { name: rust,              category: foundation, pm: apt, package: rustc,                 size_mb: 400, verify: "rustc --version",                  required: false }
+  - { name: aircrack-ng,       category: exploit,  pm: apt, package: aircrack-ng,             size_mb: 20,  verify: "aircrack-ng --help",                required: false }
+
+  # ---- recon ----
+  - { name: nmap,              category: recon,     pm: apt, package: nmap,                    size_mb: 25,  verify: "nmap --version",                   required: true }
+  - { name: masscan,           category: recon,     pm: apt, package: masscan,                 size_mb: 10,  verify: "masscan --version",                required: false }
+  - { name: rustscan,          category: recon,     pm: apt, package: rustscan,                size_mb: 20,  verify: "rustscan --version",               required: false,
+      sources: [{pm: apt, package: rustscan}, {pm: cargo, cmd: "cargo install rustscan"}] }
+  - { name: naabu,             category: recon,     pm: go,  cmd: "go install -v github.com/projectdiscovery/naabu/v2/cmd/naabu@latest", size_mb: 20, verify: "naabu -version", required: false }
+  - { name: subfinder,         category: recon,     pm: go,  cmd: "go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest", size_mb: 30, verify: "subfinder -version", required: true }
+  - { name: httpx,             category: recon,     pm: go,  cmd: "go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest", size_mb: 25, verify: "httpx -version", required: true }
+  - { name: dnsx,              category: recon,     pm: go,  cmd: "go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest", size_mb: 15, verify: "dnsx -version", required: false }
+  - { name: amass,             category: recon,     pm: apt, package: amass,                   size_mb: 250, verify: "amass -version",                   required: false,
+      sources: [{pm: apt, package: amass}, {pm: go, cmd: "go install -v github.com/owasp-amass/amass/v4/...@master"}] }
+  - { name: assetfinder,       category: recon,     pm: go,  cmd: "go install -v github.com/tomnomnom/assetfinder@latest", size_mb: 15, verify: "assetfinder -h", required: false }
+  - { name: whois,             category: recon,     pm: apt, package: whois,                   size_mb: 3,   verify: "whois --version",                   required: true }
+  - { name: whatweb,           category: recon,     pm: apt, package: whatweb,                 size_mb: 20,  verify: "whatweb --version",                required: false }
+  - { name: theHarvester,      category: recon,     pm: apt, package: theharvester,            size_mb: 50,  verify: "theHarvester -h",                  required: false,
+      sources: [{pm: apt, package: theharvester}, {pm: git, url: "https://github.com/laramies/theHarvester.git", build: "pipx install ./theHarvester"}] }
+  - { name: shodan,            category: recon,     pm: pipx, package: shodan,                 size_mb: 15,  verify: "shodan --version",                  required: false }
+  - { name: censys,            category: recon,     pm: pipx, package: censys,                 size_mb: 20,  verify: "censys --version",                  required: false }
+  - { name: photon,            category: recon,     pm: git,  url: "https://github.com/s0md3v/Photon.git", size_mb: 10, verify: "python3 Photon/photon.py --help", required: false }
+  - { name: recon-ng,          category: recon,     pm: pipx, package: recon-ng,               size_mb: 120, verify: "recon-ng --version",                required: false }
+
+  # ---- web ----
+  - { name: ffuf,              category: web,       pm: apt, package: ffuf,                    size_mb: 15,  verify: "ffuf -V",                          required: true,
+      sources: [{pm: apt, package: ffuf}, {pm: go, cmd: "go install -v github.com/ffuf/ffuf/v2@latest"}] }
+  - { name: gobuster,          category: web,       pm: apt, package: gobuster,                size_mb: 10,  verify: "gobuster version",                 required: false }
+  - { name: feroxbuster,       category: web,       pm: cargo, cmd: "cargo install feroxbuster", size_mb: 50, verify: "feroxbuster --version",            required: false,
+      sources: [{pm: cargo, cmd: "cargo install feroxbuster"}, {pm: apt, package: feroxbuster}] }
+  - { name: nikto,             category: web,       pm: apt, package: nikto,                   size_mb: 10,  verify: "nikto -Version",                    required: false }
+  - { name: nuclei,            category: web,       pm: go,  cmd: "go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest", size_mb: 100, verify: "nuclei -version", required: true }
+  - { name: wafw00f,           category: web,       pm: pipx, package: wafw00f,                size_mb: 30,  verify: "wafw00f -h",                       required: false }
+  - { name: sqlmap,            category: web,       pm: apt, package: sqlmap,                  size_mb: 40,  verify: "sqlmap --version",                 required: false }
+  - { name: testssl.sh,        category: web,       pm: git,  url: "https://github.com/drwetter/testssl.sh.git", size_mb: 5, verify: "testssl.sh --version", required: false,
+      sources: [{pm: git, url: "https://github.com/drwetter/testssl.sh.git", bindir: "/usr/local/bin", link: "testssl.sh"}] }
+  - { name: seclists,          category: web,       pm: apt, package: seclists,                size_mb: 500, verify: "ls /usr/share/seclists | head -1",  required: false }
+  - { name: wpscan,            category: web,       pm: gem, package: wpscan,                  size_mb: 40,  verify: "wpscan --version",                  required: false }
+
+  # ---- exploit / creds ----
+  - { name: metasploit,        category: exploit,   pm: apt, package: metasploit-framework,    size_mb: 1500, verify: "msfconsole -v",                   required: false }
+  - { name: searchsploit,      category: exploit,   pm: apt, package: exploitdb,               size_mb: 600, verify: "searchsploit --version",            required: true }
+  - { name: hashcat,           category: exploit,   pm: apt, package: hashcat,                 size_mb: 50,  verify: "hashcat --version",                 required: false }
+  - { name: john,              category: exploit,   pm: apt, package: john,                    size_mb: 10,  verify: "john --version",                    required: false }
+  - { name: hydra,             category: exploit,   pm: apt, package: hydra,                   size_mb: 5,   verify: "hydra -h",                          required: false }
+  - { name: netexec,           category: ad,        pm: pipx, package: netexec,                size_mb: 100, verify: "netexec -h",                        required: false,
+      sources: [{pm: pipx, package: netexec}] }
+  - { name: evil-winrm,        category: ad,        pm: gem, package: evil-winrm,              size_mb: 15,  verify: "evil-winrm -h",                     required: false }
+  - { name: impacket,          category: ad,        pm: pipx, package: impacket,               size_mb: 30,  verify: "impacket-secretsdump -h",          required: false,
+      sources: [{pm: apt, package: python3-impacket}, {pm: pipx, package: impacket}] }
+  - { name: responder,         category: ad,        pm: apt, package: responder,               size_mb: 20,  verify: "responder --version",              required: false }
+  - { name: kerbrute,          category: ad,        pm: go,  cmd: "go install -v github.com/ropnop/kerbrute@latest", size_mb: 10, verify: "kerbrute version", required: false }
+
+  # ---- mobile ----
+  - { name: adb,               category: mobile,    pm: apt, package: adb,                     size_mb: 10,  verify: "adb version",                      required: false }
+  - { name: apktool,           category: mobile,    pm: apt, package: apktool,                 size_mb: 20,  verify: "apktool --version",                required: false }
+  - { name: jadx,              category: mobile,    pm: apt, package: jadx,                    size_mb: 100, verify: "jadx --version",                    required: false }
+  - { name: frida,             category: mobile,    pm: pipx, package: frida-tools,            size_mb: 30,  verify: "frida --version",                  required: false }
+  - { name: objection,         category: mobile,    pm: pipx, package: objection,              size_mb: 40,  verify: "objection version",                required: false }
+  - { name: ghidra,            category: mobile,    pm: apt, package: ghidra,                  size_mb: 700, verify: "ghidra --version",                  required: false }
+
+  # ---- cloud ----
+  - { name: awscli,            category: cloud,     pm: pipx, package: awscli,                 size_mb: 30,  verify: "aws --version",                    required: false }
+  - { name: trivy,             category: cloud,     pm: apt, package: trivy,                   size_mb: 100, verify: "trivy --version",                   required: false }
+  - { name: prowler,           category: cloud,     pm: pipx, package: prowler,               size_mb: 60,  verify: "prowler -v",                        required: false }
+  - { name: scoutsuite,        category: cloud,     pm: pipx, package: scoutsuite,             size_mb: 50,  verify: "scout --help",                      required: false }
+  - { name: kubectl,           category: cloud,     pm: apt, package: kubectl,                 size_mb: 50,  verify: "kubectl version --client",          required: false }
+
+  # ---- utility / reporting ----
+  - { name: pandoc,            category: utility,   pm: apt, package: pandoc,                  size_mb: 150, verify: "pandoc --version",                  required: false }
+  - { name: exiftool,          category: utility,   pm: apt, package: libimage-exiftool-perl,  size_mb: 15,  verify: "exiftool -ver",                     required: false }
+  - { name: binwalk,           category: utility,   pm: apt, package: binwalk,                 size_mb: 20,  verify: "binwalk --help",                    required: false }
