@@ -280,6 +280,8 @@ Research workflow:
 
 Use the websearch/webfetch tools actively — online intelligence is a first-class input, not an afterthought.
 
+Prefer authoritative and current sources: official vendor/project documentation, OWASP, NIST, MITRE, CISA, and RFCs before community write-ups.
+
 ## Web/API workflow
 
 Map the application before testing individual endpoints.
@@ -395,12 +397,6 @@ Use placeholders in notes and reusable examples:
 `TARGET_IP`, `TARGET_DOMAIN`, `TARGET_URL`, `API_ENDPOINT`, `TEST_ACCOUNT`, `CLIENT_NAME`.
 
 Never write secrets into Git-tracked files.
-
-## Research
-
-When current information matters, use authoritative and current sources. Prefer official vendor/project documentation, OWASP, NIST, MITRE, CISA, RFCs, and reputable security research.
-
-Verify current tool syntax, vulnerability details, affected versions, and vendor advisories instead of relying on memory.
 
 ## Failure handling
 

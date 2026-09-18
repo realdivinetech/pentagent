@@ -48,7 +48,7 @@ tools:
   - { name: jq,                category: foundation, pm: apt, package: jq,                    size_mb: 5,   verify: "jq --version",                     required: true }
   - { name: tmux,              category: foundation, pm: apt, package: tmux,                  size_mb: 10,  verify: "tmux -V",                         required: true }
   - { name: ripgrep,           category: foundation, pm: apt, package: ripgrep,               size_mb: 15,  verify: "rg --version",                     required: true }
-  - { name: netcat,            category: foundation, pm: apt, package: netcat-openbsd,        size_mb: 5,   verify: "nc -h",                           required: false }
+  - { name: netcat,            category: foundation, pm: apt, package: netcat-openbsd,        size_mb: 5,   verify: "command -v nc",                required: false }
   - { name: socat,             category: foundation, pm: apt, package: socat,                 size_mb: 10,  verify: "socat -V",                        required: false }
   - { name: python3-pip,       category: foundation, pm: apt, package: python3-pip,           size_mb: 25,  verify: "pip3 --version",                   required: true }
   - { name: pipx,              category: foundation, pm: apt, package: pipx,                  size_mb: 10,  verify: "pipx --version",                   required: true,
@@ -76,15 +76,15 @@ tools:
       sources: [{pm: apt, package: theharvester}, {pm: git, url: "https://github.com/laramies/theHarvester.git", build: "pipx install ./theHarvester"}] }
   - { name: shodan,            category: recon,     pm: pipx, package: shodan,                 size_mb: 15,  verify: "shodan --version",                  required: false }
   - { name: censys,            category: recon,     pm: pipx, package: censys,                 size_mb: 20,  verify: "censys --version",                  required: false }
-  - { name: photon,            category: recon,     pm: git,  url: "https://github.com/s0md3v/Photon.git", size_mb: 10, verify: "python3 Photon/photon.py --help", required: false }
+  - { name: photon,            category: recon,     pm: git,  url: "https://github.com/s0md3v/Photon.git", dir: Photon, build: "pip3 install -r requirements.txt", size_mb: 10, verify: "python3 /opt/Photon/photon.py --help", required: false }
   - { name: recon-ng,          category: recon,     pm: pipx, package: recon-ng,               size_mb: 120, verify: "recon-ng --version",                required: false }
 
   # ---- web ----
   - { name: ffuf,              category: web,       pm: apt, package: ffuf,                    size_mb: 15,  verify: "ffuf -V",                          required: true,
       sources: [{pm: apt, package: ffuf}, {pm: go, cmd: "go install -v github.com/ffuf/ffuf/v2@latest"}] }
   - { name: gobuster,          category: web,       pm: apt, package: gobuster,                size_mb: 10,  verify: "gobuster version",                 required: false }
-  - { name: feroxbuster,       category: web,       pm: cargo, cmd: "cargo install feroxbuster", size_mb: 50, verify: "feroxbuster --version",            required: false,
-      sources: [{pm: cargo, cmd: "cargo install feroxbuster"}, {pm: apt, package: feroxbuster}] }
+  - { name: feroxbuster,       category: web,       pm: apt, package: feroxbuster,             size_mb: 50,  verify: "feroxbuster --version",            required: false,
+      sources: [{pm: apt, package: feroxbuster}, {pm: cargo, cmd: "cargo install feroxbuster"}] }
   - { name: nikto,             category: web,       pm: apt, package: nikto,                   size_mb: 10,  verify: "nikto -Version",                    required: false }
   - { name: nuclei,            category: web,       pm: go,  cmd: "go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest", size_mb: 100, verify: "nuclei -version", required: true }
   - { name: wafw00f,           category: web,       pm: pipx, package: wafw00f,                size_mb: 30,  verify: "wafw00f -h",                       required: false }

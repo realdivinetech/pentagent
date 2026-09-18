@@ -42,7 +42,7 @@ For each tool:
    - `go`: `go install ...@latest` (ensure `$HOME/go/bin` and `/usr/local/bin` are on PATH or symlink the binary)
    - `cargo`: `cargo install <name>` (binary lands in `~/.cargo/bin`; symlink or PATH-noted)
    - `gem`: `sudo gem install <package>` (or `gem install --user-install`)
-   - `git`: clone into `/opt/<tool>` (or `$HOME/.local/share/`), then honour `build` / create the `bindir` symlink if specified
+   - `git`: clone into `/opt/<dir-or-name>` (honour a `dir:` field; default `<name>`) — or `$HOME/.local/share/` when root is unavailable — then honour `build` (run inside the clone) / create the `bindir` symlink if specified
 4. **Verify after install** with the manifest `verify` command; record `ok` or the actual version to the setup log.
 
 ## Self-healing loop
