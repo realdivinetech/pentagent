@@ -13,7 +13,7 @@ fail() { printf '  \033[31mFAIL\033[0m %s\n' "$1"; FAIL=1; }
 
 echo "[1/6] Required files present"
 for f in \
-  README.md LICENSE AGENTS.md .gitignore opencode.jsonc \
+  README.md LICENSE CONTRIBUTING.md AGENTS.md .gitignore opencode.jsonc \
   prompts/pentagent-system.md prompts/agents/setup-manifest.yaml \
   docs/ARCHITECTURE.md docs/INTEGRATION.md docs/SETUP.md docs/ROADMAP.md
 do

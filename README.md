@@ -2,6 +2,8 @@
 
 > A modular, provider-agnostic AI agent for **authorized** penetration testing and offensive-security research.
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 **Pentagent** is a personal security-operations agent that plans, executes, analyzes, validates, documents, and remediates security assessments on authorized targets. It ships as **portable prompt + skills** (runtime-agnostic Markdown) with a thin adapter for **OpenCode on Kali Linux** as the first runtime.
 
 Author: [realdivinetech](https://github.com/realdivinetech)
@@ -92,8 +94,16 @@ One deliberate exception: the `setup` provisioner agent is authorized to install
 
 The canonical prompts and skills live outside any runtime-specific configuration. OpenCode is the first adapter; the same prompts map to other agent runtimes without changing core behavior. See `docs/INTEGRATION.md` for the adapter pattern.
 
+## License
+
+Released under the [MIT License](LICENSE).
+
+Copyright (c) 2026 Ojo Divine-favour Damilare (realdivinetech).
+
+Anyone may use, copy, modify, merge, publish, distribute, sublicense, and sell the software, provided the copyright and permission notices are preserved. See the [LICENSE](LICENSE) file for the full terms.
+
+Contributions are accepted under the same license — see [CONTRIBUTING](CONTRIBUTING.md).
+
 ## GitHub
 
 This repository is public. Engagement data under `engagements/` and setup logs under `setup/` are gitignored and never pushed. Do not commit real client evidence, credentials, or tokens to this repository.
-
-Copyright © realdivinetech. Released under the MIT License.
