@@ -29,7 +29,7 @@ Layering keeps the project's rule: portable prompt in `prompts/agents/`, data be
 
 | Stage | Purpose | Sample tools |
 |-------|---------|--------------|
-| **F0 Host gate** | validate before touching anything | passwordless sudo, network, disk, PATH dirs |
+| **F0 Host gate** | validate before touching anything | privileged execution (sudo), network, disk, PATH dirs |
 | **F1 Foundation** | runtimes & buildics everything depends on | build-essential, git, curl, go, pipx, node, rust, tmux |
 | **R2 Recon** | attack-surface discovery | nmap, subfinder, httpx, theHarvester, shodan, amass |
 | **W3 Web** | web/API testing | ffuf, nuclei, sqlmap, testssl.sh, seclists |
@@ -67,7 +67,7 @@ Guardrails: never retry an identical failing command; no `-f` coercion of the OS
 - **PATH**: after foundation, add missing bin dirs (`~/.cargo/bin`, `~/go/bin`, `~/.local/bin`) to the shell rc in one line; refresh session when possible.
 - **Groups**: add user to `kali`, `wireshark`, `vboxusers` where the distro implies them (document: effective after re-login).
 - **Raw sockets**: prefer distro-standard behavior; do not hand out `setcap` grants the distro doesn't ship.
-- **Sudo**: detected at F0; if passwordless sudo is missing the agent stops and hands the exact `visudo` line to the user. This is the one permission the agent refuses to grant itself silently — the user must own it.
+- **Sudo**: detected at F0. If it needs a password, the provisioner runs in **supervised mode** — it stops at each privileged step and hands the operator the exact `sudo <cmd>` to run. Optional: the operator may grant **scoped** passwordless sudo covering only the commands provisioning needs (e.g. `apt-get`, `docker`) via a curated drop-in. Blanket `ALL=(ALL) NOPASSWD:ALL` is never recommended by the agent; that decision belongs to the operator and is out of the project's install guidance.
 
 ## Permission model (OpenCode wiring)
 
@@ -85,7 +85,7 @@ The manifest carries `size_mb` per tool; profiles are stage sets. F0 sums the pr
 
 ## Things it cannot solve (handed to the user, not faked)
 
-- Passwordless sudo setup (the `visudo` line must be user-given)
+- Privileged execution (supervised sudo by default; scoped NOPASSWD only if the operator grants it — curate the command set, never blanket)
 - No network / blocked mirrors (proxy or re-run connected)
 - Insufficient disk (cleanup guidance)
 - GUI/paid tools (Burp, Nessus, Metasploit Pro) — out of scope unless requested
@@ -107,6 +107,6 @@ The manifest carries `size_mb` per tool; profiles are stage sets. F0 sums the pr
 ## Anti-goals
 
 - Never repartition, wipe, or reinstall the OS.
-- Never auto-grant passwordless sudo (user-owned decision).
+- Never auto-grant passwordless sudo; privilege is a user-owned decision. If scoped NOPASSWD is used, the operator curates the command set (e.g. `apt-get`, `docker`), never `ALL`.
 - Never force-install GUI/licensed tools.
 - No background "phone home" from the setup log.

@@ -4,10 +4,10 @@
 # `host_req` entries are non-tool requirements the setup must validate first.
 
 host_req:
-  - name: passwordless sudo
+  - name: privileged execution (sudo available)
     check: "sudo -n true"
-    why: setup runs unattended; must not wait on interactive sudo password
-    un_solvable: "Run once manually: `sudo usermod -aG sudo $USER` then `sudo visudo` to add: `$USER ALL=(ALL) NOPASSWD:ALL` (or run the provisioning from a privileged session)."
+    why: unattended mode needs passwordless sudo; supervised mode (recommended default) prompts the operator per privileged step instead
+    un_solvable: "Supervised mode (default): the provisioner proposes each privileged command and you run it yourself (or approve a scoped NOPASSWD). Never grant blanket NOPASSWD:ALL. Details: docs/SETUP.md."
   - name: network to package mirrors
     check: "curl -m 8 -fsS https://pypi.org/ -o /dev/null"
     why: installs require reachable apt/pip/go mirrors
@@ -16,10 +16,10 @@ host_req:
     check: "df -B1M --output=avail /"
     why: needs free space >= estimated install size + 30% headroom
     un_solvable: "Insufficient disk for the selected profile (needed X MB, free Y MB). Free space with: `sudo apt-get clean`, `sudo apt autoremove -y`, prune snap/caches, or add storage."
-  - name: archive-free /usr writable for symlinks
-    check: "test -w /usr/local/bin"
-    why: pipx/go installs drop binaries into /usr/local/bin
-    un_solvable: "Create it first: `sudo mkdir -p /usr/local/bin`."
+  - name: writable user bin dir (~/.local/bin) for user-space installs
+    check: "test -w \"$HOME/.local/bin\""
+    why: pipx/go/git source builds drop binaries into the user's own bin dir; system dirs stay root-owned
+    un_solvable: "Create it (no sudo needed): `mkdir -p ~/.local/bin` and ensure it is on PATH. Never chown system dirs like /usr/local/bin to the user."
 
 categories:
   foundation: "Core runtimes and system utilities every profile needs"
@@ -90,7 +90,7 @@ tools:
   - { name: wafw00f,           category: web,       pm: pipx, package: wafw00f,                size_mb: 30,  verify: "wafw00f -h",                       required: false }
   - { name: sqlmap,            category: web,       pm: apt, package: sqlmap,                  size_mb: 40,  verify: "sqlmap --version",                 required: false }
   - { name: testssl.sh,        category: web,       pm: git,  url: "https://github.com/drwetter/testssl.sh.git", size_mb: 5, verify: "testssl.sh --version", required: false,
-      sources: [{pm: git, url: "https://github.com/drwetter/testssl.sh.git", bindir: "/usr/local/bin", link: "testssl.sh"}] }
+      sources: [{pm: git, url: "https://github.com/drwetter/testssl.sh.git", bindir: "$HOME/.local/bin", link: "testssl.sh"}] }
   - { name: seclists,          category: web,       pm: apt, package: seclists,                size_mb: 500, verify: "ls /usr/share/seclists | head -1",  required: false }
   - { name: wpscan,            category: web,       pm: gem, package: wpscan,                  size_mb: 40,  verify: "wpscan --version",                  required: false }
 

@@ -17,7 +17,7 @@ Keep provider/runtime adapters thin. Do not duplicate the full prompt into multi
 - Prefer reproducible commands and record important evidence.
 - Do not fabricate findings or tool output.
 - Installation of new software requires user approval.
-  Exception: the `setup` provisioner agent is explicitly authorized to install and self-heal unattended (see `prompts/agents/setup.md`). Its grants exist only in its own agent wiring, never in the global permission map.
+  Exception: the `setup` provisioner agent is authorized to install and self-heal (see `prompts/agents/setup.md`). It runs in **supervised mode** by default — proposing privileged commands for the operator — and only goes unattended under **scoped** passwordless sudo the operator explicitly curates. It never instructs the user to grant blanket `ALL=(ALL) NOPASSWD:ALL`, and its grants exist only in its own agent wiring, never in the global permission map.
 - Treat scope as a hard boundary.
 - Keep destructive/system-sensitive operations approval-gated or blocked.
 

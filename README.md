@@ -89,7 +89,7 @@ Then use the built-in commands inside the agent:
 
 Pentagent **never installs software without explicit user approval** — enforced both by prompt rule and by the OpenCode adapter's command-level permissions.
 
-One deliberate exception: the `setup` provisioner agent is authorized to install and self-heal unattended (it is the tool that makes fresh hosts ready). Its elevated grants exist only inside that agent's own wiring, never in the global permission map, and destructive host operations remain blocked even for it.
+One deliberate exception: the `setup` provisioner agent is authorized to install and self-heal — but it prefers user-space installs (`~/.local/bin`) where possible, defaults to **supervised mode** (operator runs each privileged step), and never instructs granting blanket `NOPASSWD:ALL`. Its elevated grants exist only inside that agent's own wiring, never in the global permission map, and destructive host operations remain blocked even for it.
 
 ## Safety model
 

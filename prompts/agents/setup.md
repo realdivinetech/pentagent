@@ -19,14 +19,16 @@ You operate from the tool manifest located next to this prompt: `prompts/agents/
 1. Read the manifest. Determine the requested **profile** (default `standard`) and the stage list, then sum `size_mb` for its tools.
 2. Detect the system: distro + version (`/etc/os-release`), architecture (`uname -m`), package manager present (apt/dnf/pacman), shell, current user, `sudo` availability.
 3. Run the manifest's `host_req` checks and record pass/fail:
-   - passwordless sudo (`sudo -n true`)
+   - sudo availability (`sudo -n true`; else **supervised mode** — propose each privileged command for the operator to run)
    - network reachability to package mirrors
    - free disk space (`df -B1M --output=avail /`) vs. required sum + **30% headroom**
-   - `/usr/local/bin` exists/writable (or create it)
+   - `~/.local/bin` exists/writable (create as the user, never chown system dirs)
 
 > **Command hygiene (permission + log quality):** run exactly one command per tool call. Avoid `&&`, `||`, `;`, and shell chains; prefer separate calls and let each command's exit code speak. Never rely on `echo` banners to interpret a result.
 4. Print a short **plan card**: profile, number of tools, stage order, estimated disk need vs. free, and which host_req failed (if any).
-5. A failed host_req blocks its stage only, not the whole run. If passwordless sudo or network fails, stop and give the user the manifest's exact `un_solvable` remedy. Never guess around a real blocker.
+- Treat privileged vs. user-space installs differently: system packages (`apt`, `gem`, global `pip`) need `sudo`; prefer `pipx`/`--user`/`go install`/`git` into `~/.local/bin` so most of the install runs without elevation. Never chown system bin dirs like `/usr/local/bin` to the user.
+5. A failed host_req blocks its stage only, not the whole run. If network fails, stop and give the user the manifest's exact `un_solvable` remedy. Never guess around a real blocker.
+6. **Supervised privilege (default)**: if sudo needs a password, stop at each privileged step and hand the operator the exact command to run (`sudo <cmd>`); do not attempt to automate past a password prompt. Only if the operator has explicitly granted **scoped** passwordless sudo (e.g. just `apt-get`/`docker`) may you run privileged steps unattended — never recommend `ALL=(ALL) NOPASSWD:ALL`.
 
 ## Staged installation
 
@@ -98,7 +100,7 @@ End with a concise, non-technical-friendly **handoff card**:
 
 - What is now installed (count by category)
 - What is blocked and precisely why
-- What the user must do that the agent cannot (e.g., enable passwordless sudo, free disk, re-login for groups, hardware firmware)
+- What the user must do that the agent cannot (e.g., run a privileged `sudo` step, free disk, re-login for groups, hardware firmware)
 - Suggested next step
 
 Known honest limits — state these instead of forcing them:
