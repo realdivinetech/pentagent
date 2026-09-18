@@ -92,7 +92,8 @@ With the adapter in place, use the built-in commands inside the agent:
 |------|---------|
 | `scripts/validate.sh` | Repo consistency check (CI runs it on every push/PR) |
 | `scripts/audit.sh [profile]` | Host tool audit vs. the setup manifest (`standard` default; profiles: `webapp`, `netad`, `minimal`) |
-| `templates/engagement/` | Blank, copy-able engagement workspace (scope, tasks, attack-chains, findings, critique, report skeleton) |
+| `scripts/render-report.sh` | Render an engagement report Markdown → styled standalone HTML + A4 PDF (cover, TOC, severity chips) |
+| `templates/engagement/` | Blank, copy-able engagement workspace (scope, tasks, attack-chains, findings, critique, report skeleton + stylesheet) |
 
 ## Installation policy
 

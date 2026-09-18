@@ -36,7 +36,7 @@ Inside the session you get slash commands:
 | `/osint <target>` | Passive footprint of an authorized target |
 | `/plan` | Task tree + MITRE ATT&CK kill-chain map |
 | `/critique` | Validate findings before they enter the report |
-| `/report` | Generate the final report + detections + remediation |
+| `/report` | Generate the final report — Markdown, rendered to styled HTML + PDF |
 
 ## 3. Other-agent path (generic)
 

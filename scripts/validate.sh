@@ -15,6 +15,7 @@ echo "[1/6] Required files present"
 for f in \
   README.md LICENSE CONTRIBUTING.md AGENTS.md .gitignore \
   prompts/pentagent-system.md prompts/agents/setup-manifest.yaml \
+  scripts/render-report.sh templates/engagement/report/pentest.css \
   docs/QUICKSTART.md docs/ARCHITECTURE.md docs/INTEGRATION.md docs/SETUP.md docs/ROADMAP.md
 do
   if [ -f "$f" ]; then pass "$f"; else fail "missing $f"; fi
