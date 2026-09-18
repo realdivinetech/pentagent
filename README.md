@@ -3,6 +3,7 @@
 > A modular, provider-agnostic AI agent for **authorized** penetration testing and offensive-security research.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/realdivinetech/pentagent/actions/workflows/validate.yml/badge.svg)](https://github.com/realdivinetech/pentagent/actions/workflows/validate.yml)
 
 **Pentagent** is a personal security-operations agent that plans, executes, analyzes, validates, documents, and remediates security assessments on authorized targets. It ships as **portable prompt + skills** (runtime-agnostic Markdown) with a thin adapter for **OpenCode on Kali Linux** as the first runtime.
 
@@ -49,7 +50,7 @@ Pentagent/
 │       ├── critic.md  report-writer.md  setup.md
 │       └── setup-manifest.yaml       # setup tool inventory (data)
 ├── docs/
-│   ├── ARCHITECTURE.md  INTEGRATION.md  SETUP.md  ROADMAP.md
+│   ├── QUICKSTART.md  ARCHITECTURE.md  INTEGRATION.md  SETUP.md  ROADMAP.md
 ├── scripts/  templates/       # CI validator, host auditor, engagement scaffold
 └── engagements/               # per-target workspaces (gitignored)
 
@@ -59,6 +60,8 @@ Rebuild per docs/INTEGRATION.md.
 ```
 
 ## Quick start (OpenCode)
+
+Full first-session walkthrough: [docs/QUICKSTART.md](docs/QUICKSTART.md).
 
 The portable core is in this repo. The OpenCode adapter (`.opencode/`,
 `opencode.jsonc`) is **local, git-ignored, and not published** — build or
