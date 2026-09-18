@@ -104,9 +104,38 @@ One deliberate exception: the `setup` provisioner agent is authorized to install
 - Destructive/system-sensitive operations (`rm -rf /`, `mkfs`, repartitioning, power-off) are denied by the adapter, including inside the elevated `setup` agent.
 - Client data, credentials, and real engagement evidence are held in gitignored local directories.
 
-## Portability
+## Using it with your AI tool
 
-The canonical prompts and skills live outside any runtime-specific configuration. OpenCode is the first adapter; the same prompts map to other agent runtimes without changing core behavior. See `docs/INTEGRATION.md` for the adapter pattern.
+Pentagent is **portable knowledge, not a locked-in app**. It is a set of
+self-contained prompts/skills that any AI agent can load as its operating
+instructions. Two ways to use it:
+
+**1. In the OpenCode CLI (first adapter).** Restore the local adapter
+(`.opencode/`, `opencode.jsonc` — git-ignored, see `docs/INTEGRATION.md`),
+run `opencode` in this folder, and drive the engagement with the built-in
+commands: `/setup` (provision the host), `/engage` (open a workspace),
+`/osint`, `/plan`, `/critique`, `/report`. That is the turnkey path.
+
+**2. In any other agent runtime (Claude Code, Gemini CLI, Cursor, remote
+LLM, etc.).** The portable core is not runtime-specific:
+
+- Load `prompts/pentagent-system.md` as the session or developer/system
+  instruction. A minimal start for CLI agents:
+  ```bash
+  # generic agent CLI example — load the prompt as the system context
+  your-agent --system "$(cat prompts/pentagent-system.md)" \
+             --cwd "$PWD"                                       # then chat in the repo
+  ```
+- Map each specialist in `prompts/agents/` (`osint`, `evidence`, `planner`,
+  `critic`, `report-writer`, `setup`) to that runtime's subagent or skill
+  mechanism.
+- Give the agent shell access for Kali tools, keep the installation-approval
+  rule, and point the evidence keeper at an engagement workspace. Exact
+  steps per runtime are in `docs/INTEGRATION.md`.
+
+The prompts make no OpenCode-specific assumptions, so the same engagement
+flow (scope → recon → test → critique → report) works everywhere. In all
+cases: only ever run it against **authorized** targets.
 
 ## License
 

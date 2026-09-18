@@ -37,6 +37,32 @@ bash permission gated (`"*": "ask"`) and grant per-agent elevations only where
 you deliberately want them (see `docs/SETUP.md` for the setup-agent
 supervised/scoped model).
 
+## Quick adapter examples
+
+**Claude Code** (CLI). Load the system prompt and give it the repo as context:
+```bash
+claude --system "$(cat prompts/pentagent-system.md)" --allowed-tools "Bash(.*),Read,Write" .
+# add specialist subagents in .claude/agents/*.md pointing at prompts/agents/*.md
+```
+
+**Gemini CLI**. `gemini` picks up `AGENTS.md`; then start the session in-project
+with the system prompt:
+```bash
+gemini --prompt "$(cat prompts/pentagent-system.md) Follow it for this session."
+```
+
+**Cursor / IDE agents**. Paste `prompts/pentagent-system.md` into the project
+agent instructions, or reference it in `.cursor/rules`, and wire the specialist
+prompts as subagents/skills the same way.
+
+**Any remote/custom LLM**. Send `prompts/pentagent-system.md` as the system
+message; attach the relevant `prompts/agents/*.md` when delegating to that
+specialist; keep the scope, approval, and evidence rules intact.
+
+In every runtime the operational loop is the same:
+`/setup`-equivalent provisioning → `/engage` workspace → recon → test →
+`/critique` validation → `/report`. Only the loading mechanism differs.
+
 ## Future adapters
 
 A future version can add files such as:
