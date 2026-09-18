@@ -42,29 +42,35 @@ It never blindly runs every scanner. Every next action is chosen from what the p
 Pentagent/
 ├── README.md
 ├── AGENTS.md                  # project rules + agent roster
-├── opencode.jsonc             # first runtime adapter (OpenCode)
-├── prompts/
+├── prompts/                   # portable core: the agent itself
 │   ├── pentagent-system.md    # primary operator prompt
 │   └── agents/                # portable specialist prompts
 │       ├── osint.md  evidence.md  planner.md
 │       ├── critic.md  report-writer.md  setup.md
 │       └── setup-manifest.yaml       # setup tool inventory (data)
-├── .opencode/
-│   ├── agents/  commands/  skills/
-│   └── skills/                # skill workflows (audit, pentest, reporting…)
 ├── docs/
 │   ├── ARCHITECTURE.md  INTEGRATION.md  SETUP.md  ROADMAP.md
+├── scripts/  templates/       # CI validator, host auditor, engagement scaffold
 └── engagements/               # per-target workspaces (gitignored)
+
+Local only (git-ignored, not published): .opencode/ + opencode.jsonc — the
+per-machine OpenCode runtime wiring (commands, agents, skills, permissions).
+Rebuild per docs/INTEGRATION.md.
 ```
 
 ## Quick start (OpenCode)
 
+The portable core is in this repo. The OpenCode adapter (`.opencode/`,
+`opencode.jsonc`) is **local, git-ignored, and not published** — build or
+restore it per `docs/INTEGRATION.md`, or copy it from an existing install:
+
 ```bash
 cd Pentagent
+# restore the local adapter if needed, then:
 opencode
 ```
 
-Then use the built-in commands inside the agent:
+With the adapter in place, use the built-in commands inside the agent:
 
 | Command | Purpose |
 |---------|---------|

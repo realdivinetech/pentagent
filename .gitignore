@@ -26,7 +26,9 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Local runtime files
+# Local runtime files / OpenCode adapter (kept local, not published)
+.opencode/
+opencode.jsonc
 .opencode/tmp/
 
 # Host provisioning logs (setup agent)

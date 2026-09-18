@@ -24,6 +24,19 @@ For any other AI agent runtime:
 7. Keep secrets and engagement evidence out of the public repository.
 8. Point the evidence keeper at an engagement workspace (`PENTAGENT_ENGAGEMENTS_DIR`, default `<project>/engagements`).
 
+## Published vs. local (OpenCode adapter)
+
+The **analyze repo** publishes only the portable core (`prompts/`, `docs/`,
+`scripts/`, `templates/`). The OpenCode runtime wiring — `.opencode/`
+(commands, agents wrappers, skills) and `opencode.jsonc` (permission model) —
+is **local and git-ignored**: the human runs it on their own machine, and the
+specific permissions each operator accepts stay off GitHub. When you bulk
+`opencode.jsonc` locally, start from a normal OpenCode config and wire the
+specialist prompts in `prompts/agents/` as described above; keep the global
+bash permission gated (`"*": "ask"`) and grant per-agent elevations only where
+you deliberately want them (see `docs/SETUP.md` for the setup-agent
+supervised/scoped model).
+
 ## Future adapters
 
 A future version can add files such as:

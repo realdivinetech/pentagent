@@ -13,7 +13,7 @@ fail() { printf '  \033[31mFAIL\033[0m %s\n' "$1"; FAIL=1; }
 
 echo "[1/6] Required files present"
 for f in \
-  README.md LICENSE CONTRIBUTING.md AGENTS.md .gitignore opencode.jsonc \
+  README.md LICENSE CONTRIBUTING.md AGENTS.md .gitignore \
   prompts/pentagent-system.md prompts/agents/setup-manifest.yaml \
   docs/ARCHITECTURE.md docs/INTEGRATION.md docs/SETUP.md docs/ROADMAP.md
 do
@@ -22,6 +22,7 @@ done
 
 # Strip // line comments (respecting strings) and write the JSON body to $STRIPPED.
 STRIPPED="${TMPDIR:-/tmp}/pentagent-oc.json"
+if [ -f opencode.jsonc ]; then
 strip_jsonc() {
   python3 - "$ROOT" "$STRIPPED" <<'PY'
 import pathlib, sys
@@ -48,8 +49,12 @@ dst.write_text("".join(out))
 PY
 }
 strip_jsonc
+fi
 
-echo "[2/6] opencode.jsonc parses and agent file references resolve"
+echo "[2/6] opencode.jsonc parses and agent file references resolve (local adapter only)"
+if [ ! -f opencode.jsonc ]; then
+  pass "opencode.jsonc not present locally — skipped (OpenCode adapter is git-ignored)"
+else
 python3 - "$ROOT" "$STRIPPED" <<'PY'
 import json, pathlib, re, sys
 root, sp = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
@@ -71,8 +76,12 @@ print(f"  OK   {len(agents)} agents, all system file refs resolve")
 sys.exit(0)
 PY
 [ "$?" -eq 0 ] || FAIL=1
+fi
 
-echo "[3/6] Every /command maps to a known agent"
+echo "[3/6] Every /command maps to a known agent (local adapter only)"
+if [ ! -d .opencode/commands ]; then
+  pass "no local .opencode/commands — skipped"
+else
 python3 - "$ROOT" "$STRIPPED" <<'PY'
 import json, pathlib, re, sys
 root, sp = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
@@ -96,8 +105,12 @@ sys.exit(0)
 PY
 [ "$?" -eq 0 ] || FAIL=1
 rm -f "$STRIPPED"
+fi
 
-echo "[4/6] Skill frontmatter matches directory names"
+echo "[4/6] Skill frontmatter matches directory names (local adapter only)"
+if [ ! -d .opencode/skills ]; then
+  pass "no local .opencode/skills — skipped"
+else
 OK=1
 for sk in .opencode/skills/*/SKILL.md; do
   [ -f "$sk" ] || continue
@@ -106,6 +119,7 @@ for sk in .opencode/skills/*/SKILL.md; do
   if [ "$name" = "$dirname" ]; then pass "$sk ($name)"; else fail "$sk name='$name' != dir '$dirname'"; OK=0; fi
 done
 [ "$OK" -eq 1 ] || FAIL=1
+fi
 
 echo "[5/6] Setup manifest structure"
 python3 - "$ROOT" <<'PY'
@@ -140,7 +154,10 @@ sys.exit(0)
 PY
 [ "$?" -eq 0 ] || FAIL=1
 
-echo "[6/6] README /command references resolve"
+echo "[6/6] README /command references resolve (local adapter only)"
+if [ ! -d .opencode/commands ]; then
+  pass "no local .opencode/commands — skipped"
+else
 python3 - "$ROOT" <<'PY'
 import pathlib, re, sys
 root = pathlib.Path(sys.argv[1])
@@ -155,6 +172,7 @@ print(f"  OK   README references commands: {', '.join(refs) or '(none)'}")
 sys.exit(0)
 PY
 [ "$?" -eq 0 ] || FAIL=1
+fi
 
 echo
 if [ "$FAIL" -eq 0 ]; then
